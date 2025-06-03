@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">GasAppMobile</string>
+    <string name="logo">Logo</string>
+    <string name="calcular">Calcular</string>
+    <string name="autonomia_na_gasolina">Autonomia na gasolina</string>
+    <string name="autonomia_no_etanol">Autonomia no etanol</string>
+    <string name="pre_o_da_gasolina">Preço da gasolina</string>
+    <string name="novo_c_lculo">Novo cálculo</string>
+    <string name="pre_o_do_etanol">Preço do etanol</string>
 </resources>
