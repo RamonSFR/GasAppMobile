@@ -1,5 +1,6 @@
 package com.example.gasappmobile
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import android.widget.*
@@ -9,10 +10,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
-import android.util.Log
-import org.json.JSONException
 import java.util.concurrent.TimeUnit
-
 
 class MainActivity : AppCompatActivity() {
 
@@ -22,11 +20,40 @@ class MainActivity : AppCompatActivity() {
     private lateinit var ethPrice: EditText
     private lateinit var resultText: TextView
     private lateinit var calculateButton: Button
-    private lateinit var resetButton: Button
+    private lateinit var carSpinner: Spinner
+    private lateinit var dbHelper: CarDatabaseHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        dbHelper = CarDatabaseHelper(this)
+
+        carSpinner = findViewById(R.id.carSpinner)
+        val carNames = mutableListOf("Selecione um carro")
+        carNames.addAll(dbHelper.getAllCars())
+
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, carNames)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        carSpinner.adapter = adapter
+
+        carSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                if (position == 0) {
+                    gasAutonomy.text.clear()
+                    ethAutonomy.text.clear()
+                    return
+                }
+
+                val selectedCar = carNames[position]
+                dbHelper.getAutonomyByCar(selectedCar)?.let { (gas, eth) ->
+                    gasAutonomy.setText(gas.toString())
+                    ethAutonomy.setText(eth.toString())
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {}
+        }
 
         gasAutonomy = findViewById(R.id.editGasAutonomy)
         ethAutonomy = findViewById(R.id.editEthAutonomy)
@@ -34,12 +61,11 @@ class MainActivity : AppCompatActivity() {
         ethPrice = findViewById(R.id.editEthPrice)
         resultText = findViewById(R.id.textResult)
         calculateButton = findViewById(R.id.buttonCalculate)
-        resetButton = findViewById(R.id.buttonReset)
 
         calculateButton.setOnClickListener { sendData() }
-        resetButton.setOnClickListener { resetForm() }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun sendData() {
         val gasAut = gasAutonomy.text.toString().toFloatOrNull()
         val ethAut = ethAutonomy.text.toString().toFloatOrNull()
@@ -91,42 +117,24 @@ class MainActivity : AppCompatActivity() {
                         }
 
                         val bodyString = response.body!!.string()
-
                         val jsonResponse = JSONObject(bodyString)
+
                         val costGas = jsonResponse.getDouble("costForKmGas")
                         val costEth = jsonResponse.getDouble("costForKmEth")
                         val fuel = jsonResponse.getString("mostEfficentFuel")
 
                         resultText.text = """
-                        Custo/km na gasolina: R$ ${"%.2f".format(costGas)}
-                        Custo/km no etanol: R$ ${"%.2f".format(costEth)}
-                        Mais eficiente: ${if (fuel == "Ethanol") "Etanol" else "Gasolina"}
-                    """.trimIndent()
-
-                        resetButton.visibility = View.VISIBLE
-                        calculateButton.isEnabled = false
+                            Custo/km na gasolina: R$ ${"%.2f".format(costGas)}
+                            Custo/km no etanol: R$ ${"%.2f".format(costEth)}
+                            Mais eficiente: ${if (fuel == "Ethanol") "Etanol" else "Gasolina"}
+                        """.trimIndent()
 
                     } catch (e: Exception) {
-                        e.printStackTrace()
                         resultText.text = "Erro ao processar os dados da API.\n\nDetalhes: ${e.message}"
                         Toast.makeText(this@MainActivity, "Erro ao processar os dados da API.", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
         })
-    }
-
-
-
-
-
-    private fun resetForm() {
-        gasAutonomy.text.clear()
-        ethAutonomy.text.clear()
-        gasPrice.text.clear()
-        ethPrice.text.clear()
-        resultText.text = ""
-        calculateButton.isEnabled = true
-        resetButton.visibility = View.GONE
     }
 }

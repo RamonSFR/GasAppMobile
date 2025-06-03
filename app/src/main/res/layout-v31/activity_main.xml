@@ -33,6 +33,15 @@
         android:layout_alignParentEnd="true"
         android:outlineProvider="background">
 
+        <Spinner
+            android:id="@+id/carSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:minHeight="48dp"
+            />
+
+
         <EditText
             android:id="@+id/editGasAutonomy"
             android:autofillHints="text"
@@ -99,15 +108,5 @@
             android:text=""
             android:textSize="16sp"
             android:textColor="#000000" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonReset"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:visibility="gone"
-            android:backgroundTint="#274472"
-            android:textColor="@color/white"
-            android:text="@string/novo_c_lculo" />
     </LinearLayout>
 </RelativeLayout>
